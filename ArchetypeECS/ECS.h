@@ -39,6 +39,10 @@ namespace ECS {
 		float x, y;
 	};
 
+	struct Boids {
+		float ax = 0, ay = 0;
+	};
+
 	struct Transform2D {
 		Vector2 position = { 0,0 };
 		Vector2 velocity = { 0,0 };
@@ -243,6 +247,7 @@ namespace ECS {
 
 		bool Has(EntityID e) const { return locations.count(e) != 0; }
 		size_t ArchetypeCount() const { return archetypes.size(); }
+		const std::vector<std::unique_ptr<Archetype>>& GetArchetypes() const { return archetypes; }
 
 		//Typed multi-component iteration: matching archetypes stream their 
 		//columns in lockstep. fn is called as fn(EntityID, Comps&...)

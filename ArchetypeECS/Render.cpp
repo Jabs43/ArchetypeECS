@@ -58,7 +58,7 @@ void Render::InitRaylibWindow(int wWidth, int wHeight, int resolution, float rat
 
 	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(ScreenWidth, ScreenHeight, "raylib exmple - basic window");
-	SetTargetFPS(144);
+	//SetTargetFPS(144);
 	SetWindowMinSize(320, 240);
 
 	target = LoadRenderTexture(GameScreenWidth, GameScreenHeight);

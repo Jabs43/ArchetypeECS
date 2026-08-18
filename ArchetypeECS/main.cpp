@@ -1,6 +1,8 @@
 #include "raylib.h"
 #include "Render.h"
 #include "ECS.h"
+#include "SpatialGrid.h"
+#include "Boids.h"
 #include <vector>
 #include <cstdint>
 
@@ -13,7 +15,7 @@ int main(void) {
 	const int ScreenHeight = (int)(ScreenWidth / AsRatio);
 
 	// Init render singleton
-	Render::GetInstance().InitRaylibWindow(ScreenWidth, ScreenHeight, 1080, AsRatio);
+	Render::GetInstance().InitRaylibWindow(ScreenWidth, ScreenHeight, 1440, AsRatio);
 	SetTraceLogLevel(LOG_WARNING);// Quiet raylib chatter
 
 	const int GameScreenWidth = Render::GetInstance().GetGameScreenWidth();
@@ -22,42 +24,24 @@ int main(void) {
 	ArchetypeRegistry ecs;
 	ecs.RegisterComponent<Position>();
 	ecs.RegisterComponent<Velocity>();
-	ecs.RegisterComponent<Interactable>();
+	ecs.RegisterComponent<Boids>();
 
 	std::vector<EntityID> es;
-	for (int i = 0; i < 6; ++i) {
+	System::BoidParams params{};
+	for (int i = 0; i < 1'000; ++i) {
 		EntityID e = ecs.CreateEntity();
-		
-		ecs.AddComponent<Position>(e, { float(i), float(i)});
-		if ((i & 2) == 0) ecs.AddComponent<Velocity>(e, { 1.0f, -1.0f });
-		if ((i & 3) == 0) ecs.AddComponent<Interactable>(e, { true });
+		float ang = (float)GetRandomValue(0, 359) * DEG2RAD;   // raylib helpers, no extra include
+		float spd = params.maxSpeed * 0.5f;
+		ecs.AddComponent<Position>(e, { (float)GetRandomValue(0, GameScreenWidth),
+										(float)GetRandomValue(0, GameScreenHeight) });
+		ecs.AddComponent<Velocity>(e, { cosf(ang) * spd, sinf(ang) * spd });
+		ecs.AddComponent<Boids>(e, { 0.f, 0.f });
 		es.push_back(e);
 	}
 
 	printf("Archetypes after build: %zu\n", ecs.ArchetypeCount());
 
-	ecs.ForEach<Position, Velocity>([](EntityID e, Position& p, Velocity& v) {
-		p.x += v.x; p.y += v.y;
-		printf(" step e%u -> (%.1f, %.1f)\n", e, p.x, p.y);
-	});
-
-	ecs.RemoveComponent<Velocity>(es[0]);
-	ecs.AddComponent<Velocity>(es[1], { 9.0f, 9.0f });
-	ecs.DestroyEntity(es[4]);
-
-	printf("Archetypes after churn: &zu\n", ecs.ArchetypeCount());
-
-	for (EntityID e : es) {
-		if (!ecs.Has(e)) { printf(" e%u destroyed\n", e); continue; }
-		Position& p = ecs.GetComponent<Position>(e);
-		printf(" e%u Position=(%.1f, %.1f)%s\n", e, p.x, p.y,
-			e == es[0] ? " [no longer has velocity]" : "");
-	}
-
-	printf("e0 Has? %d ; ForEach<p,v> now visits:\n", (int)ecs.Has(es[0]));
-	ecs.ForEach<Position, Velocity>([&](EntityID e, Position&, Velocity& v) {
-		printf(" e%u vel=(%.1f, %.1f)\n", e, v.x, v.y);
-		});
+	SpatialGrid grid(GameScreenWidth, GameScreenHeight, params.viewRadius);
 
 	while (!WindowShouldClose()) {
 		// Scale calc -----------------------------------------------------
@@ -66,12 +50,33 @@ int main(void) {
 		float yoff = (GetScreenHeight() - ((float)GameScreenHeight * Scale)) * .5f;
 		SetMouseOffset(-xoff, -yoff);
 		SetMouseScale(1.0f / Scale, 1.0f / Scale);
+		float dt = GetFrameTime();
+
+		//ecs.ForEach<Position, Velocity>([&](EntityID e, Position& p, Velocity& v) {
+		//	p.x += v.x * dt; p.y += v.y * dt;
+		//	printf(" step e%u -> (%.1f, %.1f)\n", e, p.x, p.y);
+		//});
+
+		System::BoidsSystem(
+			ecs,
+			grid,
+			params,
+			dt,
+			GameScreenWidth,
+			GameScreenHeight
+		);
 
 		RenderTexture2D target = Render::GetInstance().GetRenderTexture();
 		// Draw things to be scaled --------------------------------------
 		BeginTextureMode(target);
-			ClearBackground(BLACK);
-			DrawText("Hello World", int(GameScreenWidth * .5f), int(GameScreenHeight * .5f), 40, LIGHTGRAY);
+			ClearBackground(DARKGRAY);
+			DrawText("Hello World", int(GameScreenWidth * .5f) - (10 * 11), int(GameScreenHeight * .5f), 40, LIGHTGRAY);
+
+			ecs.ForEach<Position>([&](EntityID, Position& p) {
+				DrawCircle((int)p.x, (int)p.y, 5, BLUE);
+			});
+
+			DrawFPS(0, 0);
 		EndTextureMode();
 
 		// Draw render texture to screen properly scaled ----------------

@@ -153,8 +153,11 @@
     <ClCompile Include="Render.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Boids.h" />
+    <ClInclude Include="Colliders.h" />
     <ClInclude Include="ECS.h" />
     <ClInclude Include="Render.h" />
+    <ClInclude Include="SpatialGrid.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
