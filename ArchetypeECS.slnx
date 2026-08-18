@@ -3,8 +3,8 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="ArchetypeECS/ArchetypeECS.vcxproj">
+  <Project Path="ArchetypeECS/ArchetypeECS.vcxproj" Id="6f415790-8ae2-4842-8433-802317a68ae9">
     <BuildDependency Project="raylib_gl43/raylib_gl43.vcxproj" />
   </Project>
-  <Project Path="raylib_gl43/raylib_gl43.vcxproj" />
+  <Project Path="raylib_gl43/raylib_gl43.vcxproj" Id="d0c73958-785b-46dd-83be-837c77983a59" />
 </Solution>

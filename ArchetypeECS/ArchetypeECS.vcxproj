@@ -153,6 +153,7 @@
     <ClCompile Include="Render.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ECS.h" />
     <ClInclude Include="Render.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
