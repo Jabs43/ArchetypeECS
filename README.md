@@ -129,6 +129,7 @@ Stores the data for one component type `T`, for every entity in a **single arche
 ## 2. Archetype
 
 **Responsibility**
+
 Holds all entities that share one **exact** component set. An archetype owns: its `signature`, a dense `entityIDs` list, one [ComponentColumn](#1-componentcolumn) per component in the signature, and a `compToCol` map from component ID to column index (since signature bits aren't densely packed). Everything at index `r` — `entityIDs[r]` and every `columns[...]`'s element `r` — belongs to the same entity.
 
 Because entities are grouped by exact set, a query over several component resolves to "visit the archetype whose signature contains those bits, and stream their columns" — the columns are already parallel and contiguous, so multi-component iteration needs no per-entity lookup. The trade is that changing an entity's component set moves it to different archetype (see [ArchetypeRegistry](#3-archetyperegistry) migration).
@@ -142,6 +143,7 @@ Because entities are grouped by exact set, a query over several component resolv
 ## 3. ArchetypeRegistry
 
 **Responsibility** 
+
 The main entry point. Owns all archetypes, maps each entity to its current archetype + row (`locations`), and provides create/add/remove/query. It also holds per-component **factories** (registered by `RegisterComponent<T>()`) so it can build a new archetype's columns from a bare signature — turning a set of bits back into correctly-typed columns without knowing `T` at the call site.
 
 Archetypes are keyed by signature in an `unordered_map` (`std::bitset` has a `std::hash`), so finding-or-creating an archetype is O(1), not a linear scan.
@@ -157,6 +159,7 @@ Archetypes are keyed by signature in an `unordered_map` (`std::bitset` has a `st
 - `ArchetypeCount()` / `GetArchetypes()` — introspection.
 
 **Migration model (how Add/Remove work)**
+
 Changing an entity's component set changes its signature, so it must move to a different archetype. `AddComponent` / `RemoveComponent`:
 1. Find the entity's current archetype and row.
 2. Compute the new signature and get-or-create the destination archetype.
