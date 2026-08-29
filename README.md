@@ -109,7 +109,7 @@ constexpr size_t MAX_COMPONENTS = 64;
 
 ## Architecture
 
-![ECS architecture diagram](docs/Ecs_diagram.png)
+![ECS architecture diagram](docs/Archetype_ECS_diagram.png)
 
 ---
 ## 1. ComponentColumn
