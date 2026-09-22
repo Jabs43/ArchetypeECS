@@ -58,5 +58,8 @@
     <ClInclude Include="Render.h">
       <Filter>Engine\Render</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsSystem.h">
+      <Filter>Engine\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
