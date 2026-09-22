@@ -23,8 +23,8 @@ namespace ECS {
 		return id++;
 	}
 	template<typename T>
-	static size_t GetComponentID() {
-		static size_t id = GetNextComponentID();
+	inline size_t GetComponentID() {
+		static const size_t id = GetNextComponentID();
 		return id;
 	}
 

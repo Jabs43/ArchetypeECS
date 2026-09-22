@@ -5,38 +5,58 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{872a0d24-2c24-4657-aa84-c4df6ceb5a62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Components">
+      <UniqueIdentifier>{f486df52-a98e-4d0f-be95-9c84efba3a2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Physics">
+      <UniqueIdentifier>{10a0d64c-21d3-4799-89c0-eebec63971f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Boids">
+      <UniqueIdentifier>{1e2973d2-30d4-4364-8778-58a7dbdd07e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Render">
+      <UniqueIdentifier>{7ae1211c-ac39-48a5-9f81-4c0567b87b3c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Colliders.cpp">
+      <Filter>Engine\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="SpatialGrid.cpp">
+      <Filter>Engine\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Boids.cpp">
+      <Filter>Engine\Boids</Filter>
+    </ClCompile>
     <ClCompile Include="Render.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Engine\Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Render.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ECS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Boids.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SpatialGrid.h">
-      <Filter>Header Files</Filter>
+      <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Colliders.h">
-      <Filter>Header Files</Filter>
+      <Filter>Engine\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="SpatialGrid.h">
+      <Filter>Engine\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Boids.h">
+      <Filter>Engine\Boids</Filter>
+    </ClInclude>
+    <ClInclude Include="Render.h">
+      <Filter>Engine\Render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
