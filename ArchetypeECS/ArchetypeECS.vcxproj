@@ -162,6 +162,7 @@
     <ClInclude Include="Colliders.h" />
     <ClInclude Include="ECS.h" />
     <ClInclude Include="PhysicsSystem.h" />
+    <ClInclude Include="TankScene.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="SpatialGrid.h" />
   </ItemGroup>
