@@ -10,16 +10,13 @@ using namespace ECS;
 
 int main(void) {
 
-	const float AsRatio = (float)(16.0f / 9.0f);
-	const int ScreenWidth = 450;
-	const int ScreenHeight = (int)(ScreenWidth / AsRatio);
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	InitWindow(1280, 720, "Raylib Template");
+	if (!IsWindowReady()) return 1;
 
-	// Init render singleton
-	Render::GetInstance().InitRaylibWindow(ScreenWidth, ScreenHeight, 1440, AsRatio);
-	SetTraceLogLevel(LOG_WARNING);// Quiet raylib chatter
-
-	const int GameScreenWidth = Render::GetInstance().GetGameScreenWidth();
-	const int GameScreenHeight = Render::GetInstance().GetGameScreenHeight();
+	Render render(640, 360);
+	const int GameScreenWidth = render.GetGameScreenWidth();
+	const int GameScreenHeight = render.GetGameScreenHeight();
 
 	ArchetypeRegistry ecs;
 	ecs.RegisterComponent<Position>();
@@ -44,18 +41,7 @@ int main(void) {
 	SpatialGrid grid(GameScreenWidth, GameScreenHeight, params.viewRadius);
 
 	while (!WindowShouldClose()) {
-		// Scale calc -----------------------------------------------------
-		float Scale = Render::GetInstance().GetScale();
-		float xoff = (GetScreenWidth() - ((float)GameScreenWidth * Scale)) * .5f;
-		float yoff = (GetScreenHeight() - ((float)GameScreenHeight * Scale)) * .5f;
-		SetMouseOffset(-xoff, -yoff);
-		SetMouseScale(1.0f / Scale, 1.0f / Scale);
 		float dt = GetFrameTime();
-
-		//ecs.ForEach<Position, Velocity>([&](EntityID e, Position& p, Velocity& v) {
-		//	p.x += v.x * dt; p.y += v.y * dt;
-		//	printf(" step e%u -> (%.1f, %.1f)\n", e, p.x, p.y);
-		//});
 
 		System::BoidsSystem(
 			ecs,
@@ -66,33 +52,23 @@ int main(void) {
 			GameScreenHeight
 		);
 
-		RenderTexture2D target = Render::GetInstance().GetRenderTexture();
-		// Draw things to be scaled --------------------------------------
-		BeginTextureMode(target);
-			ClearBackground(DARKGRAY);
-			DrawText("Hello World", int(GameScreenWidth * .5f) - (10 * 11), int(GameScreenHeight * .5f), 40, LIGHTGRAY);
+		render.UpdateMouseMapping();
+		render.Begin();
 
-			ecs.ForEach<Position>([&](EntityID, Position& p) {
-				DrawCircle((int)p.x, (int)p.y, 5, BLUE);
+		ClearBackground(DARKGRAY);
+		DrawText("Hello World", int(GameScreenWidth * .5f) - (10 * 11), int(GameScreenHeight * .5f), 40, LIGHTGRAY);
+
+		ecs.ForEach<Position>([&](EntityID, Position& p) {
+			DrawCircle((int)p.x, (int)p.y, 5, BLUE);
 			});
 
-			DrawFPS(0, 0);
-		EndTextureMode();
-
-		// Draw render texture to screen properly scaled ----------------
-		BeginDrawing();
-			ClearBackground(BLACK);
-			DrawTexturePro(
-				target.texture,
-				Rectangle{ 0.0f, 0.0f, (float)target.texture.width, (float)-target.texture.height },
-				Rectangle{ (GetScreenWidth() - ((float)GameScreenWidth * Scale)) * 0.5f,
-				(GetScreenHeight() - ((float)GameScreenHeight * Scale)) * 0.5f,
-				(float)GameScreenWidth * Scale, (float)GameScreenHeight * Scale },
-				Vector2{ 0, 0 }, 0.0f, WHITE);
-		EndDrawing();
+		DrawFPS(0, 0);
+		
+		render.End();
+		render.DrawRenderTexture();
 	}
 
 	// De-init textures -----------------------------------------------
-	Render::GetInstance().CloseRaylibWindow();
+	CloseWindow();
 	return 0;
 }

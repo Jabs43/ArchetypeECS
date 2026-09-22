@@ -1,43 +1,39 @@
 #pragma once
 #include "raylib.h"
-#include <iostream>
-#include <algorithm>// std::min
 
 class Render {
-	Render() { std::cout << "Render Singleton Initialized.\n"; }
-	~Render() = default;
-
-	// Rendering settings 
-	float AsRatio = float(16.0f / 9.0f);
-
-	int GameScreenWidth = 720;
-	int GameScreenHeight = int(720 / (16.0f / 9.0f));
-
-	int ScreenWidth = 450;
-	int ScreenHeight = int(450 / (16.0f / 9.0f));
-
-	RenderTexture2D target;
-
+private:
+	RenderTexture2D target{};
 public:
-	// Delete copy constructor and assigment operators to prevent duplicates
+	Render(int width, int height);
+	~Render();
+
 	Render(const Render&) = delete;
 	Render& operator=(const Render&) = delete;
 	Render(Render&&) = delete;
 	Render& operator=(Render&&) = delete;
 
-	// public static fn to acces the single instance
-	static Render& GetInstance();
-
-	void SetAspectRatio(float width, float height);
-	void SetResolution(int resolution);
-	float GetAspectRatio() const;
-	int GetGameScreenHeight() const;
-	int GetGameScreenWidth() const;
+	bool SetResolution(int width, int height);
+	bool SetAspectRation(float width, float height);
+	int GetGameScreenWidth() const { return target.texture.width; }
+	int GetGameScreenHeight() const { return target.texture.height; }
 	Vector2 GetGameScreenV() const;
-	RenderTexture2D GetRenderTexture() const;
+	float GetAspectRatio() const;
 	float GetScale() const;
+	Rectangle GetViewport() const;
+
+	// Refresh before state input and GUI drawing. GetMousePosition/GetMouseDelta
+	// then use game coordinates globally; do not convert them a second time.
+	void UpdateMouseMapping() const;
+	// Compatibility helper: returns the already-mapped mouse position.
 	Vector2 CalcVirtualMouse() const;
-	void InitRaylibWindow(int wWidth, int wHeight, int resolution, float ratio);
-	void DrawRenderTexture();
-	void CloseRaylibWindow();
+	bool IsMouseInsideGame() const;
+
+	void Begin() const;
+	void End() const;
+	void DrawRenderTexture() const;
+
+	// Pure helpers also work without an open window (used by the scaling tests)
+	static Rectangle CalculateViewport(int windowWidth, int windowHeight, int gameWidth, int gameHeight);
+	static Vector2 WindowToGame(Vector2 point, Rectangle viewport, int gameWidth, int gameHeight);
 };
