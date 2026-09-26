@@ -9,6 +9,11 @@
 #include <unordered_map>
 #include <vector>
 
+#ifdef PHYS_PROFILE
+#include "PhysProfiler.h"
+#include <chrono>
+#endif
+
 // Sensor contacts report hits without applying impulses (used by bullets).
 struct CollisionState {
     bool hit = false;
@@ -36,6 +41,10 @@ class PhysicsSystem {
     std::vector<GridItem*> pointers_;
     std::vector<GridItem*> nearby_;
     std::unordered_map<ECS::EntityID, size_t> indices_;
+
+#ifdef PHYS_PROFILE
+    PhysProfiler mProfiler;
+#endif
 
     static Contact circleCircle(Vector2 pa, float ra, Vector2 pb, float rb) {
         const float dx = pb.x - pa.x, dy = pb.y - pa.y;
@@ -134,29 +143,30 @@ class PhysicsSystem {
         return c;
     }
 
-    static void resolve(Body& a, Body& b) {
-        if (a.collision.ignore == b.grid.id || b.collision.ignore == a.grid.id) return;
+    static bool resolve(Body& a, Body& b) {
+        if (a.collision.ignore == b.grid.id || b.collision.ignore == a.grid.id) return false;
         const auto c = contact(a, b);
-        if (!c.hit) return;
+        if (!c.hit) return false;
         a.collision.hit = b.collision.hit = true;
-        if (a.collision.sensor || b.collision.sensor) return;
+        if (a.collision.sensor || b.collision.sensor) return true;
         const float ma = std::max(0.0f, a.material.inversMass);
         const float mb = std::max(0.0f, b.material.inversMass);
         const float sum = ma+mb;
-        if (sum == 0) return;
+        if (sum == 0) return true;
         a.grid.position.x -= c.normal.x*c.depth*ma/sum;
         a.grid.position.y -= c.normal.y*c.depth*ma/sum;
         b.grid.position.x += c.normal.x*c.depth*mb/sum;
         b.grid.position.y += c.normal.y*c.depth*mb/sum;
         const float speed = (b.velocity.x-a.velocity.x)*c.normal.x
                           + (b.velocity.y-a.velocity.y)*c.normal.y;
-        if (speed >= 0) return;
+        if (speed >= 0) return true;
         const float restitution = std::clamp(std::min(a.material.restitution, b.material.restitution), 0.0f, 1.0f);
         const float impulse = -(1+restitution)*speed/sum;
         a.velocity.x -= impulse*ma*c.normal.x;
         a.velocity.y -= impulse*ma*c.normal.y;
         b.velocity.x += impulse*mb*c.normal.x;
         b.velocity.y += impulse*mb*c.normal.y;
+        return true;
     }
 
     void constrain(Body& body) const {
@@ -173,7 +183,19 @@ class PhysicsSystem {
 public:
     explicit PhysicsSystem(Rect arena) : arena_(arena) {}
 
+#ifdef PHYS_PROFILE
+    void ReportProfile() const { mProfiler.report("physics updates"); }
+    void ResetProfile() { mProfiler.reset(); }
+#endif
+
     void Update(ECS::ArchetypeRegistry& ecs, float dt) {
+#ifdef PHYS_PROFILE
+        using _clk = std::chrono::steady_clock;
+        PhysSplit fs{};
+        std::uint64_t pairs = 0, overlaps = 0;
+        auto _t = _clk::now();
+        auto _lap = [&](double& acc) { auto _n = _clk::now(); acc += std::chrono::duration<double, std::milli>(_n - _t).count(); _t = _n; };
+#endif
         bodies_.clear(); indices_.clear();
         float maxHalf = 1;
         ecs.ForEach<ECS::Position, ECS::Velocity, Rotation, Collider, RigidBody, CollisionState>(
@@ -197,6 +219,10 @@ public:
                 bodies_.push_back(body);
             });
 
+#ifdef PHYS_PROFILE
+        _lap(fs.snapshot);
+#endif
+
         // Adjacent-cell queries are complete when a cell is at least the
         // largest collider diameter. Grow only, to avoid rebuilding allocation
         // on every tank rotation. The scene arena starts at (0, 0).
@@ -206,15 +232,35 @@ public:
         }
         pointers_.clear();
         for (auto& body : bodies_) pointers_.push_back(&body.grid);
+        grid_->build(pointers_);
+
+#ifdef PHYS_PROFILE
+        _lap(fs.build);
+#endif
+
         for (int iteration = 0; iteration < 3; ++iteration) {
-            grid_->build(pointers_);
+            //grid_->build(pointers_);
             for (auto& a : bodies_) {
                 grid_->getNearby(&a.grid, nearby_);
+#ifdef PHYS_PROFILE
+                _lap(fs.query);
+#endif
                 for (auto* b : nearby_) {
-                    if (b->id > a.grid.id) resolve(a, bodies_[indices_.at(b->id)]);
+                    if (b->id > a.grid.id) {
+#ifdef PHYS_PROFILE
+                        ++pairs;
+                        if (resolve(a, bodies_[indices_.at(b->id)])) ++overlaps;
+#else
+                        resolve(a, bodies_[indices_.at(b->id)]);
+#endif
+                    }
                 }
+#ifdef PHYS_PROFILE
+                _lap(fs.narrow);
+#endif
             }
         }
+
         // No ECS structural mutations occurred while these snapshots existed.
         for (auto& body : bodies_) {
             constrain(body);
@@ -222,6 +268,10 @@ public:
             ecs.GetComponent<ECS::Velocity>(body.grid.id) = body.velocity;
             ecs.GetComponent<CollisionState>(body.grid.id) = body.collision;
         }
+#ifdef PHYS_PROFILE
+        _lap(fs.writeback);
+        mProfiler.addFrame(fs, bodies_.size(), pairs, overlaps);
+#endif
     }
 };
 } // namespace System

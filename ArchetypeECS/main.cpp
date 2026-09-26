@@ -10,7 +10,7 @@ int main() {
     InitWindow(1280, 720, "Archetype ECS - Tank and collidable boxes");
     if (!IsWindowReady()) return 1;
     SetWindowMinSize(320, 240);
-    SetTargetFPS(144);
+    //SetTargetFPS(144);
     int result = 0;
     try {
         // This scope releases the render texture before CloseWindow().
