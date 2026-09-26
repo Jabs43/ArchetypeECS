@@ -226,13 +226,17 @@ public:
         // Adjacent-cell queries are complete when a cell is at least the
         // largest collider diameter. Grow only, to avoid rebuilding allocation
         // on every tank rotation. The scene arena starts at (0, 0).
-        if (!grid_ || cellSize_ < 2*maxHalf) {
-            cellSize_ = std::max(128.0f, 2*maxHalf);
+        if (!grid_ || cellSize_ < maxHalf) {
+            cellSize_ = std::max(10.0f, maxHalf);
             grid_ = std::make_unique<SpatialGrid>(arena_.width, arena_.height, cellSize_);
         }
+
         pointers_.clear();
+        pointers_.reserve(bodies_.size());
         for (auto& body : bodies_) pointers_.push_back(&body.grid);
         grid_->build(pointers_);
+
+
 
 #ifdef PHYS_PROFILE
         _lap(fs.build);
@@ -273,5 +277,7 @@ public:
         mProfiler.addFrame(fs, bodies_.size(), pairs, overlaps);
 #endif
     }
+
+    void DrawGrid() { if (grid_) grid_->draw(arena_); }
 };
 } // namespace System

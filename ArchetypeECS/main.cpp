@@ -5,6 +5,8 @@
 #include <exception>
 #include <memory>
 
+#define PHYS_PROFILE true
+
 int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(1280, 720, "Archetype ECS - Tank and collidable boxes");
@@ -19,7 +21,17 @@ int main() {
         float accumulator = 0;
         while (!WindowShouldClose()) {
             render.UpdateMouseMapping();
+#ifdef PHYS_PROFILE
+            if (IsKeyPressed(KEY_P)) scene->ReportProfile();
             if (IsKeyPressed(KEY_R)) {
+                scene->ResetProfile();
+                TraceLog(LOG_INFO, "Physics measurements reset");
+            }
+#endif
+            if (IsKeyPressed(KEY_R)) {
+#ifdef PHYS_PROFILE
+                scene->ReportProfile();
+#endif
                 scene = std::make_unique<Demo::TankScene>();
                 accumulator = 0;
             }
@@ -40,6 +52,9 @@ int main() {
             render.End();
             render.DrawRenderTexture();
         }
+#ifdef PHYS_PROFILE
+        scene->ReportProfile();
+#endif
     } catch (const std::exception& error) {
         TraceLog(LOG_ERROR, "%s", error.what());
         result = 1;

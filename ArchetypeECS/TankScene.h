@@ -68,6 +68,11 @@ public:
         }
     }
 
+#ifdef PHYS_PROFILE
+    void ReportProfile() const { physics_.ReportProfile(); }
+    void ResetProfile() { physics_.ResetProfile(); }
+#endif
+
     ECS::ArchetypeRegistry& Registry() { return ecs_; }
 
     void Update(const Input& input, float dt) {
@@ -116,9 +121,14 @@ public:
                 DrawRectanglePro({p.x, p.y, h.x*2, h.y*2}, h, r.radians*RAD2DEG, RED);
                 DrawRectanglePro({p.x, p.y, 65, 10}, {0, 5}, tank.gunAngle*RAD2DEG, PURPLE);
             });
+        physics_.DrawGrid();
         DrawRectangle(10, 10, 900, 78, Fade(BLACK, 0.85f));
         DrawText("W/S drive   A/D turn   Mouse aim   Left click fire   R reset", 20, 20, 24, RAYWHITE);
         DrawText(TextFormat("%d collidable boxes | %zu archetypes", BoxCount, ecs_.ArchetypeCount()), 20, 52, 22, LIGHTGRAY);
+#ifdef PHYS_PROFILE
+        DrawRectangle(10, 88, 900, 30, Fade(BLACK, 0.85f));
+        DrawText("Physics: F8 report to console | F9 reset measurements", 20, 92, 20, LIGHTGRAY);
+#endif
         DrawFPS(20, Height-30);
     }
 };
