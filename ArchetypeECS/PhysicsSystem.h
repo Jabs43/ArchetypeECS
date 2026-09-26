@@ -8,6 +8,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <utility>
 
 #ifdef PHYS_PROFILE
 #include "PhysProfiler.h"
@@ -35,11 +36,11 @@ class PhysicsSystem {
         CollisionState collision;
     };
     Rect arena_;
-    std::unique_ptr<SpatialGrid> grid_;
-    float cellSize_ = 0;
+    std::unique_ptr<SpatialHash> grid_;
     std::vector<Body> bodies_;
     std::vector<GridItem*> pointers_;
     std::vector<GridItem*> nearby_;
+    std::vector<std::pair<size_t, size_t>> candidates_;
     std::unordered_map<ECS::EntityID, size_t> indices_;
 
 #ifdef PHYS_PROFILE
@@ -181,7 +182,9 @@ class PhysicsSystem {
     }
 
 public:
-    explicit PhysicsSystem(Rect arena) : arena_(arena) {}
+    explicit PhysicsSystem(Rect arena) : arena_(arena) {
+        grid_ = std::make_unique<SpatialHash>();
+    }
 
 #ifdef PHYS_PROFILE
     void ReportProfile() const { mProfiler.report("physics updates"); }
@@ -223,46 +226,44 @@ public:
         _lap(fs.snapshot);
 #endif
 
-        // Adjacent-cell queries are complete when a cell is at least the
-        // largest collider diameter. Grow only, to avoid rebuilding allocation
-        // on every tank rotation. The scene arena starts at (0, 0).
-        if (!grid_ || cellSize_ < maxHalf) {
-            cellSize_ = std::max(10.0f, maxHalf);
-            grid_ = std::make_unique<SpatialGrid>(arena_.width, arena_.height, cellSize_);
-        }
-
         pointers_.clear();
         pointers_.reserve(bodies_.size());
         for (auto& body : bodies_) pointers_.push_back(&body.grid);
-        grid_->build(pointers_);
-
-
-
-#ifdef PHYS_PROFILE
-        _lap(fs.build);
-#endif
 
         for (int iteration = 0; iteration < 3; ++iteration) {
-            //grid_->build(pointers_);
-            for (auto& a : bodies_) {
-                grid_->getNearby(&a.grid, nearby_);
+            // Corrections can move bodies between cells. Each pass queries an
+            // immutable snapshot, then resolves its pairs before the next build.
+            grid_->build(pointers_);
 #ifdef PHYS_PROFILE
-                _lap(fs.query);
+            _lap(fs.build);
 #endif
-                for (auto* b : nearby_) {
-                    if (b->id > a.grid.id) {
-#ifdef PHYS_PROFILE
-                        ++pairs;
-                        if (resolve(a, bodies_[indices_.at(b->id)])) ++overlaps;
-#else
-                        resolve(a, bodies_[indices_.at(b->id)]);
-#endif
-                    }
+            candidates_.clear();
+            for (size_t i = 0; i < bodies_.size(); ++i) {
+                const auto& a = bodies_[i];
+                // The hash stores centers, so expand by the largest possible
+                // neighbor half-extent to include large and rotated colliders.
+                const float rx = a.grid.hw + maxHalf, ry = a.grid.hh + maxHalf;
+                grid_->query({a.grid.position.x - rx, a.grid.position.y - ry,
+                              2.0f * rx, 2.0f * ry}, nearby_);
+                for (const auto* b : nearby_) {
+                    if (b->id > a.grid.id)
+                        candidates_.emplace_back(i, indices_.at(b->id));
                 }
+            }
 #ifdef PHYS_PROFILE
-                _lap(fs.narrow);
+            _lap(fs.query);
+            pairs += candidates_.size();
+#endif
+            for (const auto& [a, b] : candidates_) {
+#ifdef PHYS_PROFILE
+                if (resolve(bodies_[a], bodies_[b])) ++overlaps;
+#else
+                resolve(bodies_[a], bodies_[b]);
 #endif
             }
+#ifdef PHYS_PROFILE
+            _lap(fs.narrow);
+#endif
         }
 
         // No ECS structural mutations occurred while these snapshots existed.

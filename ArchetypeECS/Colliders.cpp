@@ -1,11 +1,11 @@
 #include "Colliders.h"
 
-inline bool Rect::contains(const Point& p) const {
+bool Rect::contains(const Vector2& p) const {
 	return (p.x >= x && p.x <= x + width &&
 		p.y >= y && p.y <= y + height);
 }
 
-inline bool Rect::intersects(const Rect& other) const {
+bool Rect::intersects(const Rect& other) const {
 	return !(other.x > x + width ||
 		other.x + other.width < x ||
 		other.y > y + height ||

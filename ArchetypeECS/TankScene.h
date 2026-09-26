@@ -10,7 +10,7 @@ namespace Demo {
 inline constexpr int Width = 1920;
 inline constexpr int Height = 1080;
 inline constexpr int BoxCount = 2000;
-inline constexpr float FixedStep = 1.0f / 120.0f;
+inline constexpr float FixedStep = 1.0f / 60.0f;
 
 struct Tank {
     float gunAngle = 0;
@@ -121,7 +121,7 @@ public:
                 DrawRectanglePro({p.x, p.y, h.x*2, h.y*2}, h, r.radians*RAD2DEG, RED);
                 DrawRectanglePro({p.x, p.y, 65, 10}, {0, 5}, tank.gunAngle*RAD2DEG, PURPLE);
             });
-        physics_.DrawGrid();
+        //physics_.DrawGrid();
         DrawRectangle(10, 10, 900, 78, Fade(BLACK, 0.85f));
         DrawText("W/S drive   A/D turn   Mouse aim   Left click fire   R reset", 20, 20, 24, RAYWHITE);
         DrawText(TextFormat("%d collidable boxes | %zu archetypes", BoxCount, ecs_.ArchetypeCount()), 20, 52, 22, LIGHTGRAY);

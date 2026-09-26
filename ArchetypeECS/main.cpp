@@ -5,8 +5,6 @@
 #include <exception>
 #include <memory>
 
-#define PHYS_PROFILE true
-
 int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(1280, 720, "Archetype ECS - Tank and collidable boxes");

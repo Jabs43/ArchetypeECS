@@ -103,6 +103,6 @@ struct Point {
 
 struct Rect {
 	float x, y, width, height;
-	bool contains(const Point& p) const;
+	bool contains(const Vector2& p) const;
 	bool intersects(const Rect& other) const;
 };
