@@ -199,8 +199,19 @@ public:
         auto _t = _clk::now();
         auto _lap = [&](double& acc) { auto _n = _clk::now(); acc += std::chrono::duration<double, std::milli>(_n - _t).count(); _t = _n; };
 #endif
+        // ECSraylib applies acceleration before predicting positions. Here it
+        // is optional, so existing archetypes need no additional component.
+        ecs.ForEach<ECS::Position, ECS::Velocity, Rotation, Collider, RigidBody,
+                    CollisionState, ECS::Acceleration>(
+            [&](ECS::EntityID, ECS::Position&, ECS::Velocity& v, Rotation&,
+                Collider&, RigidBody& material, CollisionState&, ECS::Acceleration& a) {
+                if (material.inversMass > 0) {
+                    v.x += a.x * dt;
+                    v.y += a.y * dt;
+                }
+            });
         bodies_.clear(); indices_.clear();
-        float maxHalf = 1;
+        float maxHalfX = 0, maxHalfY = 0;
         ecs.ForEach<ECS::Position, ECS::Velocity, Rotation, Collider, RigidBody, CollisionState>(
             [&](ECS::EntityID id, ECS::Position& p, ECS::Velocity& v, Rotation& r,
                 Collider& collider, RigidBody& material, CollisionState& collision) {
@@ -217,7 +228,8 @@ public:
                     body.velocity = {0, 0};
                 }
                 constrain(body);
-                maxHalf = std::max({maxHalf, bounds.x, bounds.y});
+                maxHalfX = std::max(maxHalfX, bounds.x);
+                maxHalfY = std::max(maxHalfY, bounds.y);
                 indices_[id] = bodies_.size();
                 bodies_.push_back(body);
             });
@@ -230,41 +242,43 @@ public:
         pointers_.reserve(bodies_.size());
         for (auto& body : bodies_) pointers_.push_back(&body.grid);
 
-        for (int iteration = 0; iteration < 3; ++iteration) {
-            // Corrections can move bodies between cells. Each pass queries an
-            // immutable snapshot, then resolves its pairs before the next build.
-            grid_->build(pointers_);
+        // Match ECSraylib's active PhysicsSystemSG: one build and one query
+        // phase at predicted positions, then two passes over a fixed pair list.
+        grid_->build(pointers_);
 #ifdef PHYS_PROFILE
-            _lap(fs.build);
+        _lap(fs.build);
 #endif
-            candidates_.clear();
-            for (size_t i = 0; i < bodies_.size(); ++i) {
-                const auto& a = bodies_[i];
-                // The hash stores centers, so expand by the largest possible
-                // neighbor half-extent to include large and rotated colliders.
-                const float rx = a.grid.hw + maxHalf, ry = a.grid.hh + maxHalf;
-                grid_->query({a.grid.position.x - rx, a.grid.position.y - ry,
-                              2.0f * rx, 2.0f * ry}, nearby_);
-                for (const auto* b : nearby_) {
-                    if (b->id > a.grid.id)
-                        candidates_.emplace_back(i, indices_.at(b->id));
-                }
+        candidates_.clear();
+        for (size_t i = 0; i < bodies_.size(); ++i) {
+            const auto& a = bodies_[i];
+            const float rx = a.grid.hw + maxHalfX, ry = a.grid.hh + maxHalfY;
+            grid_->query({a.grid.position.x - rx, a.grid.position.y - ry,
+                          2.0f * rx, 2.0f * ry}, nearby_);
+            for (const auto* b : nearby_) {
+                if (b->id > a.grid.id)
+                    candidates_.emplace_back(i, indices_.at(b->id));
             }
-#ifdef PHYS_PROFILE
-            _lap(fs.query);
-            pairs += candidates_.size();
-#endif
-            for (const auto& [a, b] : candidates_) {
-#ifdef PHYS_PROFILE
-                if (resolve(bodies_[a], bodies_[b])) ++overlaps;
-#else
-                resolve(bodies_[a], bodies_[b]);
-#endif
-            }
-#ifdef PHYS_PROFILE
-            _lap(fs.narrow);
-#endif
         }
+#ifdef PHYS_PROFILE
+        _lap(fs.query);
+        pairs = candidates_.size();
+#endif
+        // Recompute contact geometry after earlier corrections. A contact
+        // outside this initial candidate list is discovered on the next update.
+        constexpr int ResolveIterations = 2;
+        for (int iteration = 0; iteration < ResolveIterations; ++iteration) {
+            for (const auto& [a, b] : candidates_) {
+                const bool hit = resolve(bodies_[a], bodies_[b]);
+#ifdef PHYS_PROFILE
+                if (iteration == 0 && hit) ++overlaps;
+#else
+                (void)hit;
+#endif
+            }
+        }
+#ifdef PHYS_PROFILE
+        _lap(fs.narrow);
+#endif
 
         // No ECS structural mutations occurred while these snapshots existed.
         for (auto& body : bodies_) {

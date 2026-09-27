@@ -54,7 +54,7 @@ public:
         ecs_.RegisterComponent<Tank>();
         ecs_.RegisterComponent<Bullet>();
         ecs_.RegisterComponent<BoxTag>();
-        const auto player = AddBody({Width*0.5f, Height*0.5f}, {}, Collider::Box(100, 60), 0.05f, 0.1f);
+        const auto player = AddBody({Width*0.5f, Height*0.5f}, {}, Collider::Box(100, 60), 1.0f, 0.0f);
         ecs_.AddComponent<Tank>(player, {});
 
         std::mt19937 random(42);
@@ -63,7 +63,7 @@ public:
             Vector2 position;
             do { position = {x(random), y(random)}; }
             while (std::fabs(position.x-Width*0.5f) < 85 && std::fabs(position.y-Height*0.5f) < 65);
-            const auto id = AddBody(position, {}, Collider::Box(10, 10), 1, 0.3f);
+            const auto id = AddBody(position, {}, Collider::Box(10, 10), 1.0f, 0.0f);
             ecs_.AddComponent<BoxTag>(id, {});
         }
     }

@@ -39,6 +39,11 @@ namespace ECS {
 		float x, y;
 	};
 
+	// Optional acceleration for semi-implicit physics integration.
+	struct Acceleration {
+		float x = 0, y = 0;
+	};
+
 	struct Boids {
 		float ax = 0, ay = 0;
 	};

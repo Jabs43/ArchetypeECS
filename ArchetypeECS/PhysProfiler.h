@@ -54,7 +54,7 @@ struct PhysProfiler {
         row("narrow", sum.narrow/frames, worst.narrow);
         row("writeback", sum.writeback/frames, worst.writeback);
         row("TOTAL", mean, worstTotal);
-        TraceLog(LOG_INFO, "Pairs/overlaps count attempts/hits across all 3 solver passes, not unique contacts.");
+        TraceLog(LOG_INFO, "Pairs count the fixed candidate list once; overlaps count first-pass hits. Narrow includes 2 passes.");
         TraceLog(LOG_INFO, "Timings include instrumentation overhead; worst columns describe one update.");
     }
 };

@@ -57,7 +57,9 @@ int main() {
     auto moving=add(ecs,2,0,Collider::Box(10,10),false);
     auto sensor=add(ecs,18,0,Collider::Circle(5),true,0);
     physics.Update(ecs,0);
-    check(ecs.GetComponent<CollisionState>(sensor).hit, "missed contact after cell crossing");
+    check(!ecs.GetComponent<CollisionState>(sensor).hit, "pair list must remain fixed during update");
+    physics.Update(ecs,0);
+    check(ecs.GetComponent<CollisionState>(sensor).hit, "missed new pair on next update");
     check(ecs.GetComponent<ECS::Position>(moving).x == 10, "wall separation failed");
     ecs.DestroyEntity(wall); ecs.DestroyEntity(moving); ecs.DestroyEntity(sensor);
     physics.Update(ecs,0); // Reused buffers must not retain destroyed entities.
@@ -68,5 +70,33 @@ int main() {
     ecs.GetComponent<CollisionState>(small).ignore = large;
     physics.Update(ecs,0);
     check(!ecs.GetComponent<CollisionState>(small).hit, "ignore filter failed");
-    std::cout << "PASS: hash/brute-force coverage, boundaries, duplicates, empty rebuilds, cell crossing, rotated colliders, sensors and ignore filter\n";
+    // Unequal masses and nonzero restitution survive the ECSraylib flow port.
+    ECS::ArchetypeRegistry materials; registerBodies(materials);
+    System::PhysicsSystem solver({-200,-200,400,400});
+    auto a=add(materials,0,0,Collider::Box(10,10),false,1);
+    auto b=add(materials,8,0,Collider::Box(10,10),false,0.5f);
+    materials.GetComponent<ECS::Velocity>(a) = {3,2};
+    materials.GetComponent<RigidBody>(a).restitution = 0.5f;
+    materials.GetComponent<RigidBody>(b).restitution = 0.5f;
+    solver.Update(materials,0);
+    check(std::fabs(materials.GetComponent<ECS::Position>(a).x + 4.0f/3) < 0.001f,
+          "inverse-mass separation changed");
+    check(std::fabs(materials.GetComponent<ECS::Velocity>(a).x) < 0.001f &&
+          std::fabs(materials.GetComponent<ECS::Velocity>(b).x - 1.5f) < 0.001f,
+          "restitution impulse changed");
+    check(materials.GetComponent<ECS::Velocity>(a).y == 2, "tangential velocity changed");
+
+    ECS::ArchetypeRegistry accelerated; registerBodies(accelerated);
+    accelerated.RegisterComponent<ECS::Acceleration>();
+    auto dynamic=add(accelerated,0,0,Collider::Circle(1),false);
+    accelerated.AddComponent<ECS::Acceleration>(dynamic,{4,0});
+    auto fixed=add(accelerated,100,100,Collider::Circle(1),false,0);
+    accelerated.AddComponent<ECS::Acceleration>(fixed,{4,0});
+    solver.Update(accelerated,0.5f);
+    check(accelerated.GetComponent<ECS::Velocity>(dynamic).x == 2 &&
+          accelerated.GetComponent<ECS::Position>(dynamic).x == 1,
+          "acceleration must precede position prediction");
+    check(accelerated.GetComponent<ECS::Position>(fixed).x == 100, "static body moved");
+
+    std::cout << "PASS: spatial queries, fixed pairs, contacts, materials and acceleration\n";
 }
