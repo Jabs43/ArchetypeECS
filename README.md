@@ -20,6 +20,7 @@ This Entity Component System logic is separated into three parts:
 - [1. ComponentColumn](#1-componentcolumn)
 - [2. Archetype](#2-Archetype)
 - [3. ArchetypeRegistry](#3-archetyperegistry)
+- [4. Systems](#4-Systems)
 
 ## Core Concepts
 
@@ -167,6 +168,24 @@ Changing an entity's component set changes its signature, so it must move to a d
 4. Swap-remove the vacated row from the source archetype — and fix up the row index of whichever entity got swapped into the hole. This bookkeeping is what keeps `locations` correct; omitting it desyncs reads.
 5. Update the entity's location to the destination.
 This is why structural changes is the expensive operation in an archetype ECS (it copies the entity's data between chunks), the mirror image of a sparse-set ECS where add/remove is cheap and multi-component iterations is the costly side.
+
+## 4. Systems
+
+**Responsibility**
+
+Logic that processes entities matching a component signature. The simplicity way of implementing a system is to use the `ForeEach<Comps...>(fn)` method:
+```cpp
+	ecs_.ForEach<ECS::Position, Rotation, Collider, CollisionState>(
+		[](ECS::EntityID, ECS::Position& p, Rotation& r, Collider& collider, CollisionState& state) {
+			const Color color = state.sensor ? YELLOW : (state.hit ? ORANGE : BLUE);
+			if (collider.GetShape() == Collider::Shape::Circle) {
+				DrawCircleV({p.x, p.y}, collider.GetCircleRadius(), color);
+			} else {
+				const auto h = collider.GetBoxHalfExtents();
+				DrawRectanglePro({p.x, p.y, h.x*2, h.y*2}, h, r.radians*RAD2DEG, color);
+			}
+	});
+```
 
 >[!note] Iterations + structural change don't mix. `AddComponent`, `RemoveComponent`, and `DestroyEntity` can reallocate archetype storage and swap-remove rows, invalidating an in-flight `ForEach`. Don't call them from inside a `ForEach` — record the intent and apply it after the loop (a deferred command buffer is the usual pattern).
 
