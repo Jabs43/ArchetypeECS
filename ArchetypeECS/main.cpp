@@ -5,7 +5,7 @@
 #include <exception>
 #include <memory>
 
-#define RUN_BENCHMARK_PHYSICS true
+//#define RUN_BENCHMARK_PHYSICS true
 
 #ifdef RUN_BENCHMARK_PHYSICS
 #include "PhysicsBenchmark.h"

@@ -10,7 +10,7 @@ namespace Demo {
 inline constexpr int Width = 1920;
 inline constexpr int Height = 1080;
 inline constexpr int BoxCount = 2000;
-inline constexpr float FixedStep = 1.0f / 60.0f;
+inline constexpr float FixedStep = 1.0f / 120.0f;
 
 struct Tank {
     float gunAngle = 0;
@@ -63,7 +63,7 @@ public:
             Vector2 position;
             do { position = {x(random), y(random)}; }
             while (std::fabs(position.x-Width*0.5f) < 85 && std::fabs(position.y-Height*0.5f) < 65);
-            const auto id = AddBody(position, {}, Collider::Box(10, 10), 1.0f, 0.0f);
+            const auto id = AddBody(position, {}, Collider::Box(10, 10), 1.0f, 0.2f);
             ecs_.AddComponent<BoxTag>(id, {});
         }
     }
