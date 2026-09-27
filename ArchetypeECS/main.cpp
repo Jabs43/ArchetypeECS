@@ -5,6 +5,17 @@
 #include <exception>
 #include <memory>
 
+#define RUN_BENCHMARK_PHYSICS true
+
+#ifdef RUN_BENCHMARK_PHYSICS
+#include "PhysicsBenchmark.h"
+#endif
+
+#if !defined(RUN_BENCHMARK_PHYSICS) && !defined(RUN_BENCHMARK_RENDER) \
+ && !defined(RUN_BENCHMARK_ECS) && !defined(RUN_BENCHMARK_SYSTEMS)// <-- compile the game's main ONLY when NOT benchmarking
+
+#pragma message(">>> GAME main compiling")
+
 int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(1280, 720, "Archetype ECS - Tank and collidable boxes");
@@ -60,3 +71,5 @@ int main() {
     CloseWindow();
     return result;
 }
+
+#endif // RUN_BENCHMARK

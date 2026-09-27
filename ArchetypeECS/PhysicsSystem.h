@@ -187,7 +187,7 @@ public:
     }
 
 #ifdef PHYS_PROFILE
-    void ReportProfile() const { mProfiler.report("physics updates"); }
+    void ReportProfile(const char* tag = "physics updates") const { mProfiler.report(tag); }
     void ResetProfile() { mProfiler.reset(); }
 #endif
 

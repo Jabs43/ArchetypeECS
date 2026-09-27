@@ -65,6 +65,7 @@ namespace ECS {
 		Texture* texture = nullptr;
 	};
 
+
 	//-------------------------------------//
 			// Component Column // 
 	//-------------------------------------//

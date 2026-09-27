@@ -67,5 +67,8 @@
     <ClInclude Include="PhysProfiler.h">
       <Filter>Engine\Physics</Filter>
     </ClInclude>
+    <ClInclude Include="PhysicsBenchmark.h">
+      <Filter>Engine\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
