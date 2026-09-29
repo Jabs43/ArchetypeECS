@@ -175,16 +175,16 @@ This is why structural changes is the expensive operation in an archetype ECS (i
 
 Logic that processes entities matching a component signature. The simplicity way of implementing a system is to use the `ForeEach<Comps...>(fn)` method:
 ```cpp
-	ecs_.ForEach<ECS::Position, Rotation, Collider, CollisionState>(
-		[](ECS::EntityID, ECS::Position& p, Rotation& r, Collider& collider, CollisionState& state) {
-			const Color color = state.sensor ? YELLOW : (state.hit ? ORANGE : BLUE);
-			if (collider.GetShape() == Collider::Shape::Circle) {
-				DrawCircleV({p.x, p.y}, collider.GetCircleRadius(), color);
-			} else {
-				const auto h = collider.GetBoxHalfExtents();
-				DrawRectanglePro({p.x, p.y, h.x*2, h.y*2}, h, r.radians*RAD2DEG, color);
-			}
-	});
+ecs_.ForEach<ECS::Position, Rotation, Collider, CollisionState>(
+  [](ECS::EntityID, ECS::Position& p, Rotation& r, Collider& collider, CollisionState& state) {
+		const Color color = state.sensor ? YELLOW : (state.hit ? ORANGE : BLUE);
+		if (collider.GetShape() == Collider::Shape::Circle) {
+  		DrawCircleV({p.x, p.y}, collider.GetCircleRadius(), color);
+		} else {
+  		const auto h = collider.GetBoxHalfExtents();
+  		DrawRectanglePro({p.x, p.y, h.x*2, h.y*2}, h, r.radians*RAD2DEG, color);
+		}
+});
 ```
 
 >[!note] Iterations + structural change don't mix. `AddComponent`, `RemoveComponent`, and `DestroyEntity` can reallocate archetype storage and swap-remove rows, invalidating an in-flight `ForEach`. Don't call them from inside a `ForEach` — record the intent and apply it after the loop (a deferred command buffer is the usual pattern).
