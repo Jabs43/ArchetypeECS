@@ -177,13 +177,13 @@ Logic that processes entities matching a component signature. The simplicity way
 ```cpp
 ecs_.ForEach<ECS::Position, Rotation, Collider, CollisionState>(
   [](ECS::EntityID, ECS::Position& p, Rotation& r, Collider& collider, CollisionState& state) {
-		const Color color = state.sensor ? YELLOW : (state.hit ? ORANGE : BLUE);
-		if (collider.GetShape() == Collider::Shape::Circle) {
-  		DrawCircleV({p.x, p.y}, collider.GetCircleRadius(), color);
-		} else {
-  		const auto h = collider.GetBoxHalfExtents();
-  		DrawRectanglePro({p.x, p.y, h.x*2, h.y*2}, h, r.radians*RAD2DEG, color);
-		}
+  const Color color = state.sensor ? YELLOW : (state.hit ? ORANGE : BLUE);
+  if (collider.GetShape() == Collider::Shape::Circle) {
+    DrawCircleV({p.x, p.y}, collider.GetCircleRadius(), color);
+  } else {
+    const auto h = collider.GetBoxHalfExtents();
+    DrawRectanglePro({p.x, p.y, h.x*2, h.y*2}, h, r.radians*RAD2DEG, color);
+  }
 });
 ```
 
