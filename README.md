@@ -177,8 +177,10 @@ This is why structural changes is the expensive operation in an archetype ECS (i
 
 **Responsibility**
 
-Logic that processes entities matching a component signature. The simplicity way of implementing a system is to use the `ForeEach<Comps...>(fn)` method:
+Logic that processes entities matching a component signature. The simplest way of implementing a system is to use the `ForeEach<Comps...>(fn)` method:
 ```cpp
+// This is a example of a system that iterates over
+// any entities that have a <pos,rot,collider,collisionstate>
 ecs_.ForEach<ECS::Position, Rotation, Collider, CollisionState>(
   [](ECS::EntityID, ECS::Position& p, Rotation& r, Collider& collider, CollisionState& state) {
   const Color color = state.sensor ? YELLOW : (state.hit ? ORANGE : BLUE);
