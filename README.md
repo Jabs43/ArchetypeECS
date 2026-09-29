@@ -169,6 +169,10 @@ Changing an entity's component set changes its signature, so it must move to a d
 5. Update the entity's location to the destination.
 This is why structural changes is the expensive operation in an archetype ECS (it copies the entity's data between chunks), the mirror image of a sparse-set ECS where add/remove is cheap and multi-component iterations is the costly side.
 
+>[!note] Iterations + structural change don't mix. `AddComponent`, `RemoveComponent`, and `DestroyEntity` can reallocate archetype storage and swap-remove rows, invalidating an in-flight `ForEach`. Don't call them from inside a `ForEach` — record the intent and apply it after the loop (a deferred command buffer is the usual pattern).
+
+---
+
 ## 4. Systems
 
 **Responsibility**
@@ -186,8 +190,6 @@ ecs_.ForEach<ECS::Position, Rotation, Collider, CollisionState>(
   }
 });
 ```
-
->[!note] Iterations + structural change don't mix. `AddComponent`, `RemoveComponent`, and `DestroyEntity` can reallocate archetype storage and swap-remove rows, invalidating an in-flight `ForEach`. Don't call them from inside a `ForEach` — record the intent and apply it after the loop (a deferred command buffer is the usual pattern).
 
 Notes:
 - Every entity is born into the empty (zero-signature) archetype, which persists even after all entities migrate out of it — so `ArchetypeCount()` is (distinct populated component sets) + 1. Adding components one at a time can also create intermediate archetypes an entity only passes through.
