@@ -2,7 +2,7 @@
 #include "BehaviorTree.h"
 #include <cstdio>
 
-struct SceneManager {
+struct SceneManager {// Used as a blackboard
 	std::string current_scene = "Splash";
 	bool request_quit = false;
 };

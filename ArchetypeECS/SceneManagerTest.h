@@ -15,7 +15,7 @@ public:
 	MainMenuScene(SceneManager& manager) : SceneActionNode(manager, "Menu") {}
 	
 	void OnUpdate() override {
-		printf("MainMenu Update...\n");
+		printf("	MainMenu Update...\n");
 		frame_count++;
 		if (frame_count >= 2) {
 			sm.current_scene = "Gameplay";
@@ -29,9 +29,9 @@ public:
 	GamePlayScene(SceneManager& manager) : SceneActionNode(manager, "Gameplay") {}
 
 	void OnUpdate() override {
-		printf("Playing Game (Loop %d )...\n", ++loops);
+		printf("	Playing Game (Loop %d )...\n", ++loops);
 		if (loops >= 3) {
-			printf("Player closed the game.\n");
+			printf("	Player closed the game.\n");
 			sm.request_quit = true;
 		}
 	}
@@ -42,7 +42,7 @@ public:
 	SplashScene(SceneManager& manager) : SceneActionNode(manager, "Splash") {}
 
 	void OnUpdate() override {
-		printf("Showing Splash Screen Logo...\n");
+		printf("	Showing Splash Screen Logo...\n");
 		sm.current_scene = "Menu";// Auto transition next frame
 	}
 };
