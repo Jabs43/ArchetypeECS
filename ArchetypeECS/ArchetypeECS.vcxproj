@@ -155,7 +155,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(PhysProfile)'=='true'">
     <ClCompile>
-      <PreprocessorDefinitions>PHYS_PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PHYS_PROFILE;RUN_SCENEMANAGER_TEST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -166,12 +166,15 @@
     <ClCompile Include="SpatialGrid.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BehaviorTree.h" />
     <ClInclude Include="Boids.h" />
     <ClInclude Include="Colliders.h" />
     <ClInclude Include="ECS.h" />
     <ClInclude Include="PhysicsBenchmark.h" />
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="PhysProfiler.h" />
+    <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="SceneManagerTest.h" />
     <ClInclude Include="TankScene.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="SpatialGrid.h" />
