@@ -24,6 +24,12 @@
     <Filter Include="Engine\Render">
       <UniqueIdentifier>{7ae1211c-ac39-48a5-9f81-4c0567b87b3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\SceneController">
+      <UniqueIdentifier>{3e5e2472-61d0-4373-ab03-ad415fcbb8f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\BehaviorTree">
+      <UniqueIdentifier>{a2b90efa-fdec-4839-9f8c-503c7edc9a9a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -40,6 +46,12 @@
     </ClCompile>
     <ClCompile Include="Render.cpp">
       <Filter>Engine\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneController.cpp">
+      <Filter>Engine\SceneController</Filter>
+    </ClCompile>
+    <ClCompile Include="BehaviorTree.cpp">
+      <Filter>Engine\BehaviorTree</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -73,14 +85,14 @@
     <ClInclude Include="SceneManager.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="BehaviorTree.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
     <ClInclude Include="SceneManagerTest.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="SceneController.h">
-      <Filter>Engine</Filter>
+      <Filter>Engine\SceneController</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviorTree.h">
+      <Filter>Engine\BehaviorTree</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

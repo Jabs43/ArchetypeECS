@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
+#include <cmath>
 
 class SceneController;
 
@@ -44,117 +46,22 @@ class SceneController {
 	bool transitioning = false;
 	bool switched = false;
 
-	void SwitchTo(const std::string& next) {
-		if (!current.empty()) {
-			scenes.at(current)->OnExit();
-		}
+	void SwitchTo(const std::string& next);
+	float EaseInOutQuad(float t);
 
-		current = next;
-		scenes.at(current)->OnEnter();
-	}
 public:
-	void AddScene(std::string name, std::unique_ptr<IScene> scene) {
-		scenes.emplace(std::move(name), std::move(scene));
-	}
 
-	void AddTransition(std::string from, std::string to, Transition transition) {
-		transitions[{std::move(from), std::move(to)}] = transition;
-	}
+	void AddScene(std::string name, std::unique_ptr<IScene> scene);
+	void AddTransition(std::string from, std::string to, Transition transition);
 
 	// Call once after registering scenes
-	void Start(const std::string& name) {
-		SwitchTo(name);
-	}
+	void Start(const std::string& name);
 
-	void RequestScene(const std::string& next) {
-		if (transitioning || next == current ||
-			scenes.find(next) == scenes.end()) {
-			return;
-		}
-	
-		// Queue the request; never exit a scene inside its update callback
-		destination = next;
-	}
+	void RequestScene(const std::string& next);
 
-	void Update(float dt) {
-		if (transitioning) {
-			elapsed = std::min(elapsed + dt, animation.duration);
+	void Update(float dt);
 
-			const float midpoint = animation.duration * 0.5f;
+	void Draw(const int width, const int height);
 
-			if (!switched && elapsed >= midpoint) {
-				SwitchTo(destination);
-				switched = true;
-			}
-
-			if (elapsed >= animation.duration) {
-				transitioning = false;
-				destination.clear();
-			}
-
-			// Freeze scene update throughout the transition
-			return;
-		}
-
-		scenes.at(current)->Update(dt);
-
-		if (destination.empty()) return;
-		
-		const auto found = transitions.find({ current, destination });
-
-		// Unregistered pairs switch immediately.
-		if (found == transitions.end() || found->second.duration <= 0.0f) {
-			SwitchTo(destination);
-			destination.clear();
-			return;
-		}
-
-		animation = found->second;
-		elapsed = 0.0f;
-		switched = false;
-		transitioning = true;
-	}
-
-	void Draw() {
-		scenes.at(current)->Draw();
-		if (!transitioning) return;
-		const float progress = elapsed / animation.duration;
-		// Coveragte increases 0 -> 1, then decreases 1 -> 0
-		const float coverage = progress < 0.5f
-			? progress * 2.0f
-			: (1.0 - progress) * 2.0f;
-
-		const int width = GetScreenWidth();
-		const int height = GetScreenHeight();
-
-		switch (animation.effect) {
-			case TransitionEffect::FADE:
-				DrawRectangle(0, 0, width, height, Fade(animation.color, coverage));
-				break;
-
-			case TransitionEffect::WIPE: {
-				// Cover from the left, then uncover towards the right.
-				const float edge = progress < 0.5f
-					? progress * 2.0f
-					: (progress - 0.5f) * 2.0f;
-
-				const int pixels = static_cast<int>(width * edge);
-				if (progress < 0.5f) {
-					DrawRectangle(0, 0, pixels, height, animation.color);
-				}
-				else {
-					DrawRectangle(0,0,width-pixels,height,animation.color);
-				}
-
-				break;
-			}
-		}
-	}
-
-	void Shutdown() {
-		if (!current.empty()) {
-			scenes.at(current)->OnExit();
-			current.clear();
-		}
-	}
+	void Shutdown();
 };

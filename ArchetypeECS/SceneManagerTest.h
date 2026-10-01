@@ -1,6 +1,7 @@
 #pragma once
 #include "raylib.h"
 #include "SceneController.h"
+#include "Render.h"
 
 
 #ifdef RUN_SCENEMANAGER_TEST
@@ -57,12 +58,16 @@ public:
 };
 
 int main() {
-	InitWindow(800, 450, "SceneManager + raylib");
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+	InitWindow(1920, 1080, "SceneManager + raylib");
 	SetTraceLogLevel(LOG_WARNING);
+	SetWindowMinSize(320, 240);
 
 	SetExitKey(KEY_NULL);
 
 	{
+		Render render(1920, 1080);
+
 		SceneController controller;
 
 		controller.AddScene("Menu", std::make_unique<MenuScene>(controller));
@@ -73,12 +78,14 @@ int main() {
 		controller.Start("Menu");
 
 		while (!WindowShouldClose()) {
-
+			render.UpdateMouseMapping();
 			controller.Update(GetFrameTime());
 
-			BeginDrawing();
-			controller.Draw();
-			EndDrawing();
+			render.Begin();
+				ClearBackground(BLACK);
+				controller.Draw(render.GetGameScreenWidth(), render.GetGameScreenHeight());
+			render.End();
+			render.DrawRenderTexture();
 		}
 		controller.Shutdown();
 	}

@@ -15,34 +15,16 @@ class CompositeNode : public BTNode {
 protected:
 	std::vector<std::shared_ptr<BTNode>> children;
 public:
-	void AddChild(std::shared_ptr<BTNode> child) {
-		children.push_back(child);
-	}
+	void AddChild(std::shared_ptr<BTNode> child);
 };
 
 class SequenceNode : public CompositeNode {
 public:
-	NodeStatus Tick() override {
-		for (const auto& child : children) {
-			NodeStatus status = child->Tick();
-			if (status != NodeStatus::SUCCESS) {
-				return status;// Returns early (FAILURE or RUNNING)
-			}
-		}
-		return NodeStatus::SUCCESS;
-	}
+	NodeStatus Tick() override;
 };
 
 class SelectorNode : public CompositeNode {
 public:
-	NodeStatus Tick() override {
-		for (const auto& child : children) {
-			NodeStatus status = child->Tick();
-			if (status != NodeStatus::FAILURE) {
-				return status;// Returns early (SUCCESS or RUNNING)
-			}
-		}
-		return NodeStatus::FAILURE;
-	}
+	NodeStatus Tick() override;
 };
 

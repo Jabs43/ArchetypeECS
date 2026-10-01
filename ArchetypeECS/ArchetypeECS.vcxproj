@@ -159,10 +159,12 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BehaviorTree.cpp" />
     <ClCompile Include="Boids.cpp" />
     <ClCompile Include="Colliders.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Render.cpp" />
+    <ClCompile Include="SceneController.cpp" />
     <ClCompile Include="SpatialGrid.cpp" />
   </ItemGroup>
   <ItemGroup>
