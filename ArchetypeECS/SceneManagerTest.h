@@ -62,6 +62,7 @@ int main() {
 	InitWindow(1920, 1080, "SceneManager + raylib");
 	SetTraceLogLevel(LOG_WARNING);
 	SetWindowMinSize(320, 240);
+	//SetTargetFPS(60);
 
 	SetExitKey(KEY_NULL);
 
@@ -72,8 +73,8 @@ int main() {
 
 		controller.AddScene("Menu", std::make_unique<MenuScene>(controller));
 		controller.AddScene("Game", std::make_unique<GameScene>(controller));
-		controller.AddTransition("Menu", "Game", { TransitionEffect::WIPE, 0.8f, BLACK });
-		controller.AddTransition("Game", "Menu", { TransitionEffect::FADE, 0.5f, BLACK });
+		controller.AddTransition("Menu", "Game", { TransitionEffect::BUBBLE, 1.2f, BLACK });
+		controller.AddTransition("Game", "Menu", { TransitionEffect::WIPE, .8f, BLACK });
 
 		controller.Start("Menu");
 

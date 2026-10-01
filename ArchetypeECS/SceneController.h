@@ -24,7 +24,7 @@ public:
 	virtual void Draw() = 0;
 };
 
-enum class TransitionEffect { FADE, WIPE };
+enum class TransitionEffect { FADE, WIPE, BUBBLE };
 
 struct Transition {
 	TransitionEffect effect;

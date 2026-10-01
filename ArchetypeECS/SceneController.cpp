@@ -38,7 +38,11 @@ void SceneController::Update(float dt) {
 	if (transitioning) {
 		elapsed = std::min(elapsed + dt, animation.duration);
 
-		const float midpoint = animation.duration * 0.5f;
+		const float switchProgress =
+			animation.effect == TransitionEffect::BUBBLE
+			? 2.55f / 4.0f
+			: 0.5;
+		const float midpoint = animation.duration * switchProgress;
 
 		if (!switched && elapsed >= midpoint) {
 			SwitchTo(destination);
@@ -101,6 +105,35 @@ void SceneController::Draw(const int width, const int height) {
 			DrawRectangle(0, 0, width - pixels, height, animation.color);
 		}
 
+		break;
+	}
+	case TransitionEffect::BUBBLE: {
+		constexpr int CellSize = 200;
+		constexpr float TwoPi = PI * 2.0f;
+
+		const float t = progress * 4.0f;
+		const auto picoSin = [](float turns) {
+			return -std::sin(turns * TwoPi);
+			};
+
+		const int columns = (width + CellSize - 1) / CellSize;
+		const int rows = (height + CellSize - 1) / CellSize;
+
+		constexpr float movement = CellSize * (10.0f / 20.0f);
+		constexpr float maxRadius = CellSize * (15.0f / 16.0f);
+
+		for (int column = 0; column < columns; ++column) {
+			const float x = static_cast<float>(column * CellSize);
+			const float osc1 = picoSin(t + column * 0.1f);
+			for (int row = 0; row < rows; ++row) {
+				const float osc2 = picoSin(t / 4.0f + row * 0.03f);
+				const float y = row * CellSize + osc1 * movement;
+				const float radius = osc2 * maxRadius;
+				if (radius > 0.0f) {
+					DrawCircleV({ x,y }, radius, animation.color);
+				}
+			}
+		}
 		break;
 	}
 	}
