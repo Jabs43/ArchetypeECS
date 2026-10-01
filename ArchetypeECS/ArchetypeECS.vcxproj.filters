@@ -30,6 +30,9 @@
     <Filter Include="Engine\BehaviorTree">
       <UniqueIdentifier>{a2b90efa-fdec-4839-9f8c-503c7edc9a9a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Engine\ECS">
+      <UniqueIdentifier>{84a7a808-4cfc-46fe-b868-486680206bfe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -53,11 +56,11 @@
     <ClCompile Include="BehaviorTree.cpp">
       <Filter>Engine\BehaviorTree</Filter>
     </ClCompile>
+    <ClCompile Include="ECS.cpp">
+      <Filter>Engine\ECS</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ECS.h">
-      <Filter>Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Colliders.h">
       <Filter>Engine\Components</Filter>
     </ClInclude>
@@ -93,6 +96,9 @@
     </ClInclude>
     <ClInclude Include="BehaviorTree.h">
       <Filter>Engine\BehaviorTree</Filter>
+    </ClInclude>
+    <ClInclude Include="ECS.h">
+      <Filter>Engine\ECS</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

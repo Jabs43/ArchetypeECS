@@ -44,10 +44,10 @@ public:
 
 		const float distance = 240.f * dt;
 
-		if (IsKeyDown(KEY_LEFT))  player.x -= distance;
-		if (IsKeyDown(KEY_RIGHT)) player.x += distance;
-		if (IsKeyDown(KEY_UP))    player.y -= distance;
-		if (IsKeyDown(KEY_DOWN))  player.y += distance;
+		if (IsKeyDown(KEY_A)) player.x -= distance;
+		if (IsKeyDown(KEY_D)) player.x += distance;
+		if (IsKeyDown(KEY_W)) player.y -= distance;
+		if (IsKeyDown(KEY_S)) player.y += distance;
 	}
 
 	void Draw() override {
@@ -74,7 +74,7 @@ int main() {
 		controller.AddScene("Menu", std::make_unique<MenuScene>(controller));
 		controller.AddScene("Game", std::make_unique<GameScene>(controller));
 		controller.AddTransition("Menu", "Game", { TransitionEffect::BUBBLE, 1.2f, BLACK });
-		controller.AddTransition("Game", "Menu", { TransitionEffect::WIPE, .8f, BLACK });
+		controller.AddTransition("Game", "Menu", { TransitionEffect::FADE, .8f, BLACK });
 
 		controller.Start("Menu");
 

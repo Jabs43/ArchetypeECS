@@ -107,11 +107,7 @@ namespace ECS {
 		std::vector<std::unique_ptr<IComponentColumn>> columns;//dense: one per set bit
 		std::unordered_map<size_t, size_t> compToCol;//componentID -> column index
 
-		IComponentColumn* Col(size_t compID) {
-			auto it = compToCol.find(compID);
-			assert(it != compToCol.end() && "Archetype lacks that component.");
-			return columns[it->second].get();
-		}
+		IComponentColumn* Col(size_t compID);
 
 		template<typename T>
 		ComponentColumn<T>* TypedCol() {
@@ -136,37 +132,9 @@ namespace ECS {
 		std::unordered_map<EntityID, EntityLocation> locations;
 		EntityID nextEntity = 0;
 
-		Archetype* GetOrCreate(Signature sig) {
-			auto it = bySignature.find(sig);
-			if (it != bySignature.end()) return it->second;
+		Archetype* GetOrCreate(Signature sig);
 
-			auto arch = std::make_unique<Archetype>();
-			arch->signature = sig;
-			for (size_t id = 0; id < MAX_COMPONENTS; ++id) {
-				if (!sig.test(id)) continue;
-				auto f = factories.find(id);
-				assert(f != factories.end() && "Component used in a signature was never registered.");
-				arch->compToCol[id] = arch->columns.size();
-				arch->columns.push_back(f->second());
-			}
-
-			Archetype* raw = arch.get();
-			bySignature[sig] = raw;
-			archetypes.push_back(std::move(arch));
-			return raw;
-		}
-
-		void RemoveRow(Archetype* arch, size_t row) {
-			const size_t last = arch->entityIDs.size() - 1;
-			for (auto& col : arch->columns) col->SwapRemove(row);
-
-			EntityID moved = arch->entityIDs[last];
-			if (row != last) {
-				arch->entityIDs[row] = moved;
-				locations[moved].row = row;
-			}
-			arch->entityIDs.pop_back();
-		}
+		void RemoveRow(Archetype* arch, size_t row);
 
 	public:
 		template<typename T>
@@ -175,13 +143,7 @@ namespace ECS {
 			factories[id] = [] { return std::unique_ptr<IComponentColumn>(std::make_unique<ComponentColumn<T>>()); };
 		}
 
-		EntityID CreateEntity() {
-			EntityID e = nextEntity++;
-			Archetype* empty = GetOrCreate(Signature{});//signature 0: no columns
-			locations[e] = { empty, empty->entityIDs.size() };
-			empty->entityIDs.push_back(e);
-			return e;
-		}
+		EntityID CreateEntity();
 
 		template<typename T> 
 		void AddComponent(EntityID e, T value) {
@@ -238,12 +200,7 @@ namespace ECS {
 			locations[e] = { dst, dstRow };
 		}
 
-		void DestroyEntity(EntityID e) {
-			auto it = locations.find(e);
-			if (it == locations.end()) return;
-			RemoveRow(it->second.archetype, it->second.row);
-			locations.erase(it);
-		}
+		void DestroyEntity(EntityID e);
 
 		template<typename T>
 		T& GetComponent(EntityID e) {
@@ -251,9 +208,9 @@ namespace ECS {
 			return loc.archetype->TypedCol<T>()->data[loc.row];
 		}
 
-		bool Has(EntityID e) const { return locations.count(e) != 0; }
-		size_t ArchetypeCount() const { return archetypes.size(); }
-		const std::vector<std::unique_ptr<Archetype>>& GetArchetypes() const { return archetypes; }
+		bool Has(EntityID e) const;
+		size_t ArchetypeCount() const;
+		const std::vector<std::unique_ptr<Archetype>>& GetArchetypes() const;
 
 		//Typed multi-component iteration: matching archetypes stream their 
 		//columns in lockstep. fn is called as fn(EntityID, Comps&...)

@@ -162,6 +162,7 @@
     <ClCompile Include="BehaviorTree.cpp" />
     <ClCompile Include="Boids.cpp" />
     <ClCompile Include="Colliders.cpp" />
+    <ClCompile Include="ECS.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="SceneController.cpp" />
