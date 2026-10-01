@@ -79,5 +79,8 @@
     <ClInclude Include="SceneManagerTest.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="SceneController.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -173,6 +173,7 @@
     <ClInclude Include="PhysicsBenchmark.h" />
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="PhysProfiler.h" />
+    <ClInclude Include="SceneController.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="SceneManagerTest.h" />
     <ClInclude Include="TankScene.h" />

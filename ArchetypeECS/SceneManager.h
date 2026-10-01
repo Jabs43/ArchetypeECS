@@ -35,6 +35,12 @@ public:
 	virtual void OnUpdate() = 0;
 	virtual void OnExit() { printf("[Exiting Scene] %s\n", name.c_str()); initialized = false; }
 
+	void Stop() {
+		if (!initialized) return;
+		OnExit();
+		initialized = false;
+	}
+
 	NodeStatus Tick() override {
 		if (!initialized) {
 			OnEnter();
@@ -44,7 +50,7 @@ public:
 		OnUpdate();
 
 		if (sm.current_scene != name) {
-			OnExit();
+			Stop();
 			return NodeStatus::SUCCESS;// Transition handled succefully
 		}
 
