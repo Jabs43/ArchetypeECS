@@ -73,7 +73,7 @@ int main() {
 
 		controller.AddScene("Menu", std::make_unique<MenuScene>(controller));
 		controller.AddScene("Game", std::make_unique<GameScene>(controller));
-		controller.AddTransition("Menu", "Game", { TransitionEffect::BUBBLE, 1.2f, BLACK });
+		controller.AddTransition("Menu", "Game", { TransitionEffect::BUBBLEWIPE, 1.2f, BLACK });
 		controller.AddTransition("Game", "Menu", { TransitionEffect::FADE, .8f, BLACK });
 
 		controller.Start("Menu");
